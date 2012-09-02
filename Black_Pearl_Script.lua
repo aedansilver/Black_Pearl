@@ -49,19 +49,19 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
  end
 
  if(QAST == MIN_AP) then -- if alliance team is full
- TAP = MIN_AP -- then total alliance players equal with minimum alliance players required
+ TAP = "FULL" -- then total alliance players equal with minimum alliance players required (Full team)
  else -- if team not full
- TAP = QAST -- then total alliance players equal with currently players qued
+ TAP = "UNREADY" -- then total alliance players equal with currently players qued (Not full)
  end
   
- if(QHST == MIN_HP) then -- check if horde team is full or not
- THP = MIN_HP -- then total horde players equal with minimum horde players required
+ if(QHST == MIN_HP) then -- if horde team is full
+ THP = "FULL" -- then total horde players equal with minimum horde players required (Full team)
  else -- if team not full
- THP = QHST -- then total alliance players equal with currently players qued
+ THP = "UNREADY" -- then total alliance players equal with currently players qued (Not full)
  end
   
-  if(TAP == THP) then -- teleporter both teams to ships
-  local QueryResult = CharDBQuery("SELECT * FROM blackpearl_queue;")      -- QueryResult is now a query result containing all rows from table_name
+ if(TAP == "FULL" and THP == "FULL") then -- if Teams are full (Thanks to Rochet for this part)
+  QueryResult = CharDBQuery("SELECT * FROM blackpearl_queue;")      -- QueryResult is now a query result containing all rows from table_name
 if(QueryResult) then                                              -- Check that the query did not fail and did actually return at least one row
     repeat                                                        -- QueryResult is NOT a lua table! It is a query result, so we cant use for k,v in pairs for example. We can use repeat or for loop with Q:GetRowCount()
         local player_name = QueryResult:GetColumn(1):GetString()  -- Are you sure it is in column 1? Columns start from 0, so in normal character table it would be 2 for example. (guid 0, acct, 1, name, 2)
