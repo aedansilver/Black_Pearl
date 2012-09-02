@@ -19,7 +19,6 @@ local MIN_HP = 1 -- minimum horde players to start the battle (MAXIMUM ALLOWED: 
 --[[--  BROADCAST MESSAGES  --]]-- : Not recommended to edit
 local queuedMSG = "You have been placed in que."
 local unqueuedMSG = "You have left the que."
-local playersQued = "Players qued to this battle:"
 -----------------------------------------------------------
 local T = {}
 
