@@ -6,9 +6,6 @@
 	   ||||||	||||||  ||  ||  ||||||  ||  ||      ||		||||||  ||  ||   ||  ||  |||||| 
 							MAINTAINTED BY ALEXEWARR (KNOWN AS AK47SIGH)
 --]]
---[[--  DO NOT EDIT THIS CATEGORY  --]]-- : Do not edit these values
-BP_ASTART = { 1, -10180.42, -5124.49, 9.402811, 4.712514 }
-BP_HSTART = { 1, -10100.23, -5131.04, 11.257527, 4.856875 }
 
 --[[--  SCRIPT CONFIGS  --]]-- : Availe configs
 local Battlemaster_EntryID = 92000
@@ -19,41 +16,49 @@ local MIN_HP = 1 -- minimum horde players to start the battle (MAXIMUM ALLOWED: 
 --[[--  BROADCAST MESSAGES  --]]-- : Not recommended to edit
 local queuedMSG = "You have been placed in que."
 local unqueuedMSG = "You have left the que."
+
+--[[--  DO NOT EDIT THIS CATEGORY  --]]-- : Do not edit these values
+BP_ASTART = { 1, -10180.42, -5124.49, 9.402811, 4.712514 }
+BP_HSTART = { 1, -10100.23, -5131.04, 11.257527, 4.856875 }
 -----------------------------------------------------------
 local T = {}
 
-function T.OnQue(pPlayer)
-	plrAccName = pPlayer:GetAccountName()
-	plrCharName = pPlayer:GetName()
-	if (pPlayer:GetTeam() == 1) then
-	plrFaction = "Horde"
-	else
-	plrFaction = "Alliance"
-	end
- GetQAStatus = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `faction`='Alliance';")
- GetQHStatus = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `faction`='Horde';")
- if(GetQAStatus == nil) then
- QAST = 0+1
- else
-  QAST = GetQAStatus:GetRowCount()
-  end
-  if(GetQHStatus == nil) then
-  QHST = 0+1
-  else
-  QHST = GetQHStatus:GetRowCount()
-end
+function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
+ plrAccName = pPlayer:GetAccountName() -- Define Player's Account Name in this function
+ plrCharName = pPlayer:GetName() -- Define Player's Character Name in this function
+ 
+  if(pPlayer:GetTeam() == 1) then 
+   plrFaction = "Horde" -- Define faction for the character name
+   else
+   plrFaction = "Alliance" -- Define faction for the character name
+   end
+   
+ GetQAStatus = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `faction`='Alliance';") -- Get Character names with Alliance faction
+ GetQHStatus = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `faction`='Horde';") -- Get Character names with Horde faction
+ 
+ if(GetQAStatus == nil) then -- if there is no character in database with alliance faction
+ QAST = 0+1 -- then status string 0+joined player
+ else -- if there is at least 1 player of alliance faction
+ QAST = GetQAStatus:GetRowCount() -- then result how many
+ end
+ 
+ if(GetQHStatus == nil) then -- if there is no character in database horde faction
+ QHST = 0+1 -- then status string 0+joined player
+ else -- if there is at least 1 player of horde faction
+ QHST = GetQHStatus:GetRowCount() -- then result how many
+ end
 
-  if(QAST == MIN_AP) then -- check if alliance team is full or not
-  TAP = MIN_AP
-  else
-  TAP = QAST
-  end
+ if(QAST == MIN_AP) then -- if alliance team is full
+ TAP = MIN_AP -- then total alliance players equal with minimum alliance players required
+ else -- if team not full
+ TAP = QAST -- then total alliance players equal with currently players qued
+ end
   
-  if(QHST == MIN_HP) then -- check if horde team is full or not
-  THP = MIN_HP
-  else
-  THP = QHST
-  end
+ if(QHST == MIN_HP) then -- check if horde team is full or not
+ THP = MIN_HP -- then total horde players equal with minimum horde players required
+ else -- if team not full
+ THP = QHST -- then total alliance players equal with currently players qued
+ end
   
   if(TAP == THP) then -- teleporter both teams to ships
   local QueryResult = CharDBQuery("SELECT * FROM blackpearl_queue;")      -- QueryResult is now a query result containing all rows from table_name
