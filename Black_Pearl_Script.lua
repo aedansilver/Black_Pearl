@@ -50,14 +50,32 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
 
  if(QAST == MIN_AP) then -- if alliance team is full
  TAP = "FULL" -- then total alliance players equal with minimum alliance players required (Full team)
+ if(pPlayer:GetTeam() == 0) then -- alliance player
+ 	pPlayer:SendAreaTriggerMessage("Alliance Queue is Full. Please stand by for a free spot.")
+ end
  else -- if team not full
  TAP = "UNREADY" -- then total alliance players equal with currently players qued (Not full)
+ if(pPlayer:GetTeam() == 0) then -- alliance player
+ CharDBQuery("INSERT INTO `blackpearl_queue` (`AccName`, `Character`, `faction`) VALUES ('"..plrAccName.."', '"..plrCharName.."', '"..plrFaction.."');") -- Insert player in queue table
+  pPlayer:PlaySoundToPlayer(8458) -- play Sound on Battle Que Join
+  	pPlayer:SendAreaTriggerMessage("You are now placed in queue.")
+  pPlayer:SendBroadcastMessage("Horde: "..QHST.."/"..MIN_HP..". Alliance: "..QAST.."/"..MIN_AP..".") -- Show how many Alliance & Horde players are qued to battle
+ end
  end
   
  if(QHST == MIN_HP) then -- if horde team is full
  THP = "FULL" -- then total horde players equal with minimum horde players required (Full team)
+ if(pPlayer:GetTeam() == 1) then -- horde player
+ 	pPlayer:SendAreaTriggerMessage("Horde Queue is Full. Please stand by for a free spot.")
+ end
  else -- if team not full
  THP = "UNREADY" -- then total alliance players equal with currently players qued (Not full)
+ if(pPlayer:GetTeam() == 1) then -- horde player
+ CharDBQuery("INSERT INTO `blackpearl_queue` (`AccName`, `Character`, `faction`) VALUES ('"..plrAccName.."', '"..plrCharName.."', '"..plrFaction.."');") -- Insert player in queue table
+  pPlayer:PlaySoundToPlayer(8458) -- play Sound on Battle Que Join
+  	pPlayer:SendAreaTriggerMessage("You are now placed in queue.")
+  pPlayer:SendBroadcastMessage("Alliance: "..QAST.."/"..MIN_AP..". Horde: "..QHST.."/"..MIN_HP..".") -- Show how many Alliance & Horde players are qued to battle
+ end
  end
   
  if(TAP == "FULL" and THP == "FULL") then -- if Teams are full (Thanks to Rochet for this part)
@@ -132,9 +150,6 @@ if (intid == 1) then -- if player tries to join the battle
    if(TAP == "FULL" and THP == "FULL") then -- if teams are full
    pUnit:SetNPCFlags(0) -- disable npc gossip to prevent players from bugging the join que
    end
-  CharDBQuery("INSERT INTO `blackpearl_queue` (`AccName`, `Character`, `faction`) VALUES ('"..plrAccName.."', '"..plrCharName.."', '"..plrFaction.."');") -- Insert player in queue table
-  pPlayer:PlaySoundToPlayer(8458) -- play Sound on Battle Que Join
-  pPlayer:SendBroadcastMessage("Alliance: "..QAST.."/"..MIN_AP..". Horde: "..QHST.."/"..MIN_HP..".") -- Show how many Alliance & Horde players are qued to battle
   pPlayer:GossipComplete() -- Close Gossip to prevent ugly bugs
   return T.Battlemaster_OnGossip(pUnit,event,pPlayer) -- return to the main menu
 end
