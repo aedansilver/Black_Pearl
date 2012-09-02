@@ -8,7 +8,7 @@
 --]]
 
 --[[--  SCRIPT CONFIGS  --]]-- : Availe configs
-local Battlemaster_EntryID = 92000
+local Battlemaster_EntryID = 92000 -- npc's entry ID, the npc where the players can join battle or leave
 local MIN_PLAYERS = 2 -- minimum players to start the battle (MAXIMUM ALLOWED: 20 - do not pass this value)
 local MIN_AP = 1 -- minimum alliance players to start the battle (MAXIMUM ALLOWED: 20 - do not pass this value)
 local MIN_HP = 1 -- minimum horde players to start the battle (MAXIMUM ALLOWED: 20 - do not pass this value)
@@ -20,7 +20,7 @@ local unqueuedMSG = "You have left the que."
 --[[--  DO NOT EDIT THIS CATEGORY  --]]-- : Do not edit these values
 BP_ASTART = { 1, -10180.42, -5124.49, 9.402811, 4.712514 }
 BP_HSTART = { 1, -10100.23, -5131.04, 11.257527, 4.856875 }
------------------------------------------------------------
+
 local T = {}
 
 function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
@@ -85,7 +85,6 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
  else -- if teams are not full
  -- do something if teams are not full
  end
- 
 end -- end of the OnQue Function
 
 function T.CheckBattle(pPlayer) -- check status for battle
@@ -101,68 +100,56 @@ function T.CheckBattle(pPlayer) -- check status for battle
  end
 end -- end of the battle status function
 
-function T.CheckPlayer(pPlayer)
-	plrAccName = pPlayer:GetAccountName()
-	plrCharName = pPlayer:GetName()
- GetPCheck = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `AccName`='"..plrAccName.."';")
- -- PCheck = GetPCheck:GetColumn(0):GetString() -- this gave us error 
-  if(GetPCheck == element) then
-	MenuItem01 = "Que to Battle! Now."
-	intID01 = "1"
- else
-	MenuItem01 = "You are qued! Leave?"
-	intID01 = "2"
- end
-end
------------------------------------------------------------
+function T.CheckPlayer(pPlayer) -- Check player function
+ plrAccName = pPlayer:GetAccountName() -- Define player's account name
+ plrCharName = pPlayer:GetName() -- Define Character's Name
+ 
+ GetPCheck = CharDBQuery("SELECT * FROM blackpearl_queue WHERE `AccName`='"..plrAccName.."';") -- Get player from que / this is checking if is in que or not
+  if(GetPCheck == nil) then -- if player is not qued
+	MenuItem01 = "Que to Battle! Now." -- Menu string
+	intID01 = "1" -- Menu intid
+  else -- if player is qued already
+	MenuItem01 = "You are qued! Leave?" -- Menu String
+	intID01 = "2" -- Menu intid
+  end
+end -- end of the CheckPlayer function
 
 
-function T.Battlemaster_OnGossip(pUnit,event,pPlayer)
-	T.CheckBattle(pPlayer)
-	T.CheckPlayer(pPlayer)
-		pUnit:GossipCreateMenu(105695, pPlayer, 0)
-		pUnit:GossipMenuAddItem(0,MenuItem01,intID01,0)
-		pUnit:GossipMenuAddItem(0,"TELEPORT TO BATTLE (TEST)",2,0)
-	pUnit:GossipSendMenu(pPlayer)
+function T.Battlemaster_OnGossip(pUnit,event,pPlayer) -- Battle Master NPC Gossip
+ T.CheckBattle(pPlayer)
+ T.CheckPlayer(pPlayer)
+  pUnit:GossipCreateMenu(105695, pPlayer, 0)
+  pUnit:GossipMenuAddItem(0,MenuItem01,intID01,0)
+  pUnit:GossipSendMenu(pPlayer)
 end
 
-function T.Battlemaster_OnSelect(pUnit,event,pPlayer,id,intid,code)
-plrAccName = pPlayer:GetAccountName()
-plrCharName = pPlayer:GetName()
+function T.Battlemaster_OnSelect(pUnit,event,pPlayer,id,intid,code) -- Battle Master NPC on Select Item
+ plrAccName = pPlayer:GetAccountName() -- Define Player's Account Name
+ plrCharName = pPlayer:GetName() -- Define Player's Character Name
 
-if (intid == 1) then
-T.OnQue(pPlayer)
-if(TAP == THP) then -- disable que join
-pUnit:SetNPCFlags(0)
-end
-CharDBQuery("INSERT INTO `blackpearl_queue` (`AccName`, `Character`, `faction`) VALUES ('"..plrAccName.."', '"..plrCharName.."', '"..plrFaction.."');")
-pPlayer:PlaySoundToPlayer(8458)
-pPlayer:SendBroadcastMessage("Alliance: "..QAST.."/"..MIN_AP..". Horde: "..QHST.."/"..MIN_HP..".")
-pPlayer:GossipComplete()
-return T.Battlemaster_OnGossip(pUnit,event,pPlayer)
-end
-
-if (intid == 2) then
-CharDBQuery("DELETE FROM `blackpearl_queue` WHERE  `AccName`='"..plrAccName.."' ;")
-pPlayer:SendBroadcastMessage(unqueuedMSG)
-pPlayer:GossipComplete()
-return T.Battlemaster_OnGossip(pUnit,event,pPlayer)
+if (intid == 1) then -- if player tries to join the battle
+  T.OnQue(pPlayer) -- load function: OnQue
+   if(TAP == "FULL" and THP == "FULL") then -- if teams are full
+   pUnit:SetNPCFlags(0) -- disable npc gossip to prevent players from bugging the join que
+   end
+  CharDBQuery("INSERT INTO `blackpearl_queue` (`AccName`, `Character`, `faction`) VALUES ('"..plrAccName.."', '"..plrCharName.."', '"..plrFaction.."');") -- Insert player in queue table
+  pPlayer:PlaySoundToPlayer(8458) -- play Sound on Battle Que Join
+  pPlayer:SendBroadcastMessage("Alliance: "..QAST.."/"..MIN_AP..". Horde: "..QHST.."/"..MIN_HP..".") -- Show how many Alliance & Horde players are qued to battle
+  pPlayer:GossipComplete() -- Close Gossip to prevent ugly bugs
+  return T.Battlemaster_OnGossip(pUnit,event,pPlayer) -- return to the main menu
 end
 
-if (intid == 3) then
-	if (pPlayer:GetTeam() == 1) then-- horde player
-	pPlayer:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5])
-	end
-	if (pPlayer:GetTeam() == 0) then-- ally player
-	pPlayer:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5])
-	end
-	-- pPlayer:SendBroadcastMessage(table.find(BP_ASTART))
-	end
-
-if(intid == 0) then 
-pPlayer:GossipComplete()
+if (intid == 2) then -- if leave que
+  CharDBQuery("DELETE FROM `blackpearl_queue` WHERE  `AccName`='"..plrAccName.."' ;") -- remove player from queue table
+  pPlayer:SendBroadcastMessage(unqueuedMSG) -- broadcast a msg to player when leave que
+  pPlayer:GossipComplete() -- Close Gossip to prevent ugly bugs
+  return T.Battlemaster_OnGossip(pUnit,event,pPlayer) -- return to the main menu
 end
 
+if(intid == 0) then -- if close menu / whenever we need it, we will use it
+pPlayer:GossipComplete() -- close main menu
 end
-RegisterUnitGossipEvent(Battlemaster_EntryID, 1, T.Battlemaster_OnGossip)
-RegisterUnitGossipEvent(Battlemaster_EntryID, 2, T.Battlemaster_OnSelect)
+end -- End of the function: Battlemaster on select 
+
+RegisterUnitGossipEvent(Battlemaster_EntryID, 1, T.Battlemaster_OnGossip) -- not recommended to edit! DO NOT EDIT
+RegisterUnitGossipEvent(Battlemaster_EntryID, 2, T.Battlemaster_OnSelect) -- not recommended to edit! DO NOT EDIT
