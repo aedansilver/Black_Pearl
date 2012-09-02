@@ -61,33 +61,32 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
  end
   
  if(TAP == "FULL" and THP == "FULL") then -- if Teams are full (Thanks to Rochet for this part)
-  QueryResult = CharDBQuery("SELECT * FROM blackpearl_queue;")      -- QueryResult is now a query result containing all rows from table_name
-if(QueryResult) then                                              -- Check that the query did not fail and did actually return at least one row
+  QueryResult = CharDBQuery("SELECT * FROM blackpearl_queue;")    -- QueryResult is now a query result containing all rows from table_name
+ if(QueryResult) then                                              -- Check that the query did not fail and did actually return at least one row
     repeat                                                        -- QueryResult is NOT a lua table! It is a query result, so we cant use for k,v in pairs for example. We can use repeat or for loop with Q:GetRowCount()
-        local player_name = QueryResult:GetColumn(1):GetString()  -- Are you sure it is in column 1? Columns start from 0, so in normal character table it would be 2 for example. (guid 0, acct, 1, name, 2)
-        local player = GetPlayer(player_name)                     -- Find the player from world with the name and save it to a variable
-        if(player) then                                           -- Check if a player was found ingame
-            -- player:SendBroadcastMessage("Hello")                  -- Send a message if he was
-			if(player:GetTeam() == 1) then -- horde go to
-			player:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5])
-			else -- alliance go to
-			player:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5])
-			end
-			if(pPlayer:GetTeam() == 1) then -- h go to
-			pPlayer:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5])
-			else
-			pPlayer:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5])
-			end
-        else
-                                                                  -- do something if the player was not found
-        end
-    until not QueryResult:NextRow()                               -- repeat until NextRow() = false, so until (not QueryResult:NextRow()) is true.
-end
-  else
-  -- do nothing
-  end
-
-end
+     local player_name = QueryResult:GetColumn(1):GetString()  -- Are you sure it is in column 1? Columns start from 0, so in normal character table it would be 2 for example. (guid 0, acct, 1, name, 2)
+     local player = GetPlayer(player_name)                     -- Find the player from world with the name and save it to a variable
+    if(player) then                                           -- Check if a player was found ingame
+     if(player:GetTeam() == 1) then -- if horde team
+     player:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5]) -- teleport horde players to horde cargo
+     else -- if alliance team
+     player:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5]) -- teleport alliance players to alliance cargo
+     end
+    if(pPlayer:GetTeam() == 1) then -- if horde player (last player joined the que)
+    pPlayer:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5]) -- teleport player to the horde cargo
+    else -- if alliance player (last player joined the que)
+    pPlayer:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5]) -- teleport player to the alliance cargo
+    end
+   else -- if players not found
+   -- do something if the player was not found
+   end
+  until not QueryResult:NextRow() -- repeat until NextRow() = false, so until (not QueryResult:NextRow()) is true.
+ end
+ else -- if teams are not full
+ -- do something if teams are not full
+ end
+ 
+end -- end of the OnQue Function
 
 function T.CheckBattle(pPlayer)
  GetBStatus = CharDBQuery("SELECT * FROM blackpearl_status ;")
