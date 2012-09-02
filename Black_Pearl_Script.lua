@@ -73,9 +73,9 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
      player:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5]) -- teleport alliance players to alliance cargo
      end
     if(pPlayer:GetTeam() == 1) then -- if horde player (last player joined the que)
-    pPlayer:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5]) -- teleport player to the horde cargo
+     pPlayer:Teleport(BP_HSTART[1], BP_HSTART[2], BP_HSTART[3], BP_HSTART[4], BP_HSTART[5]) -- teleport player to the horde cargo
     else -- if alliance player (last player joined the que)
-    pPlayer:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5]) -- teleport player to the alliance cargo
+     pPlayer:Teleport(BP_ASTART[1], BP_ASTART[2], BP_ASTART[3], BP_ASTART[4], BP_ASTART[5]) -- teleport player to the alliance cargo
     end
    else -- if players not found
    -- do something if the player was not found
@@ -88,17 +88,18 @@ function T.OnQue(pPlayer) -- Functin When Player is Trying to Que to Battle
  
 end -- end of the OnQue Function
 
-function T.CheckBattle(pPlayer)
- GetBStatus = CharDBQuery("SELECT * FROM blackpearl_status ;")
- BStatus = GetBStatus:GetColumn(0):GetLong()
- if(BStatus == 1) then
-	MenuItem01 = "Battle is in progress! Try Later."
-	intID01 = "0"
- else
-	MenuItem01 = "Que to Battle! Now."
-	intID01 = "1"
+function T.CheckBattle(pPlayer) -- check status for battle
+ GetBStatus = CharDBQuery("SELECT * FROM blackpearl_status ;") -- get status for battle
+ BStatus = GetBStatus:GetColumn(0):GetLong() -- get battle status as number (1=isStarted, 0=Avaible)
+ 
+ if(BStatus == 1) then -- if Battle status has started
+    MenuItem01 = "Battle is in progress! Try Later." -- Menu String
+    intID01 = "0" -- Menu intid
+ else -- if Battle didn't started
+    MenuItem01 = "Que to Battle! Now." -- Menu String
+    intID01 = "1" -- Menu intid
  end
-end
+end -- end of the battle status function
 
 function T.CheckPlayer(pPlayer)
 	plrAccName = pPlayer:GetAccountName()
